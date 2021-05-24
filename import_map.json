@@ -1,0 +1,12 @@
+{
+	"imports": {
+		"cors": "https://deno.land/x/cors@v1.2.1/mod.ts",
+		"dotenv": "https://deno.land/x/dotenv@v2.0.0/mod.ts",
+		"opine": "https://deno.land/x/opine@1.4.0/mod.ts",
+		"mongo": "https://deno.land/x/mongo@v0.23.1/mod.ts",
+		"flags": "https://deno.land/std/flags/mod.ts",
+		"/": "./",
+		"./": "./",
+		"routes": "./routes/"
+	}
+}
