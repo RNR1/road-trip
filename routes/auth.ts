@@ -1,13 +1,9 @@
 import { Router } from 'opine';
+import { Auth } from 'controller';
 
 const authRouter = Router();
 
-authRouter.post('/signup', (req, res, next) => {
-	res.send('authenticated! (not)');
-});
-
-authRouter.post('/login', (req, res, next) => {
-	res.send('authenticated! (not)');
-});
+authRouter.post('/signup', Auth.signup);
+authRouter.post('/login', Auth.login);
 
 export default authRouter;
