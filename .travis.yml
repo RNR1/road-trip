@@ -1,4 +1,6 @@
-sudo: required
+os: linux
+dist: xenial
+language: ruby
 
 services:
   - docker
@@ -14,7 +16,7 @@ deploy:
   region: 'eu-west-1'
   app: 'road-trip-api'
   env: 'Roadtripapi-env'
-  bucket_name: 'elasticbeanstalk-eu-west-1-510833883070'
+  bucket: 'elasticbeanstalk-eu-west-1-510833883070'
   bucket_path: 'road-trip-api'
   access_key_id: '$AWS_ACCESS_KEY_ID'
   secret_access_key: '$AWS_SECRET_ACCESS_KEY'
