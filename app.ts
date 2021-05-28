@@ -13,6 +13,7 @@ const port = Number(Number(config().PORT));
 const app = opine();
 
 app.use(opineCors());
+app.use(logger);
 app.use(verifyPayload);
 app.use(json());
 
