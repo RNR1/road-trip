@@ -7,6 +7,7 @@ before_install:
   - docker build -t ronbraha/road-trip-backend .
 script:
   - docker run ronbraha/road-trip-backend test --import-map=import_map.json --config=tsconfig.json --allow-env tests/version.test.ts
+  - docker run ronbraha/road-trip-backend test --import-map=import_map.json --config=tsconfig.json --allow-env --unstable --allow-read --allow-net tests/port.test.ts
 
 deploy:
   provider: elasticbeanstalk

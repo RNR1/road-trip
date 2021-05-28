@@ -8,7 +8,6 @@ import { auth } from 'routes';
 config();
 connect();
 
-const port = Number(Deno.env.get('PORT'));
 const app = opine();
 
 app.use(opineCors());
@@ -20,4 +19,10 @@ app.use('/', serveStatic('static'));
 app.use(errorHandler);
 app.use(logger);
 
-app.listen(port, () => console.log(`server has started on port ${port} 🚀`));
+if (import.meta.main) {
+	const server = app.listen();
+	const address = server.listener.addr as Deno.NetAddr;
+	console.log(`Server started on ${address.hostname}:${address.port}`);
+}
+
+export default app;

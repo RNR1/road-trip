@@ -11,11 +11,14 @@
 		"logger": "https://deno.land/std@0.97.0/log/mod.ts",
 		"mongo": "https://deno.land/x/mongo@v0.23.1/mod.ts",
 		"opine": "https://deno.land/x/opine@1.4.0/mod.ts",
+		"superdeno": "https://deno.land/x/superdeno@4.2.0/mod.ts",
+		"app": "./app.ts",
 		"routes": "./routes/index.ts",
 		"controller": "./controller/index.ts",
 		"consts": "./config/constants.ts",
 		"db": "./config/db_client.ts",
 		"models": "./models/index.ts",
-		"middleware": "./middleware/index.ts"
+		"middleware": "./middleware/index.ts",
+		"testing": "./tests/deps.ts"
 	}
 }
