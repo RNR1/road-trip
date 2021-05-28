@@ -11,7 +11,7 @@ connect();
 console.dir(Deno.env.toObject());
 const port = Number(Deno.env.get('PORT'));
 const { args } = Deno;
-const argPort = parse(args).port;
+const argPort = parse(args).port ?? 8000;
 const app = opine();
 
 app.use(opineCors());
