@@ -7,7 +7,7 @@ import { auth } from 'routes';
 
 config();
 connect();
-console.dir(Deno.env.toObject());
+
 const port = Number(Deno.env.get('PORT'));
 const app = opine();
 
