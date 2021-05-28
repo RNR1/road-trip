@@ -9,7 +9,6 @@ config();
 connect();
 
 const port = Number(Number(config().PORT));
-
 const app = opine();
 
 app.use(opineCors());
@@ -21,6 +20,4 @@ app.use('/api/auth', auth);
 app.use(errorHandler);
 app.use(logger);
 
-app.listen(port, () =>
-	console.log(`server has started on http://localhost:${port} 🚀`)
-);
+app.listen(port, () => console.log(`server has started on port ${port} 🚀`));
