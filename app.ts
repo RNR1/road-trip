@@ -1,4 +1,4 @@
-import { opine, json } from 'opine';
+import { opine, json, serveStatic } from 'opine';
 import { opineCors } from 'cors';
 import { config } from 'dotenv';
 import { connect } from 'db';
@@ -16,6 +16,7 @@ app.use(logger);
 app.use(json());
 
 app.use('/api/auth', auth);
+app.use('/', serveStatic('static'));
 app.use(errorHandler);
 app.use(logger);
 
