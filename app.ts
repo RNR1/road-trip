@@ -1,4 +1,4 @@
-import { opine, json, serveStatic } from 'opine';
+import { opine, json } from 'opine';
 import { opineCors } from 'cors';
 import { config } from 'dotenv';
 import { connect } from 'db';
@@ -15,7 +15,9 @@ app.use(logger);
 app.use(json());
 
 app.use('/api/auth', auth);
-app.use('/', serveStatic('static'));
+app.get('/', (_, res) =>
+	res.send('Road trip API, you are probably not looking for us.')
+);
 app.use(errorHandler);
 app.use(logger);
 
