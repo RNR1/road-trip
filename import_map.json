@@ -4,7 +4,7 @@
 		"cors": "https://deno.land/x/cors@v1.2.1/mod.ts",
 		"dotenv": "https://deno.land/x/dotenv@v2.0.0/mod.ts",
 		"loadEnv": "https://deno.land/x/dotenv@v2.0.0/load.ts",
-		"flags": "https://deno.land/std@v0.97.0/flags/mod.ts",
+		"flags": "https://deno.land/std@0.97.0/flags/mod.ts",
 		"isEmail": "https://deno.land/x/isemail@v1.0.1/mod.ts",
 		"jwt": "https://deno.land/x/djwt@v2.2/mod.ts",
 		"logger": "https://deno.land/std@0.97.0/log/mod.ts",
