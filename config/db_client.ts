@@ -17,6 +17,6 @@ export async function connect() {
 	}
 }
 
-export function getDb() {
+export function getDb(): typeof db {
 	return db;
 }
