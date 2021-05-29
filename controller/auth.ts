@@ -19,7 +19,9 @@ export const signup: RequestHandler<
 			password?.length <= 5
 		) {
 			res.setStatus(403);
-			throw new Error('Invalid credentials');
+			throw new Error(
+				"Yikes, something here doesn't look right, please try again"
+			);
 		}
 		const hashedPassword = await bcrypt.hash(password);
 		const userId = await users().insertOne({
@@ -32,7 +34,9 @@ export const signup: RequestHandler<
 		if (!userId)
 			return res
 				.setStatus(500)
-				.json({ message: 'Unexpected error while creating user' });
+				.json({
+					message: "Yikes, something here doesn't look right, please try again"
+				});
 		const token = await create(
 			{ alg: 'HS512', typ: 'JWT' },
 			{ id: userId },
@@ -61,14 +65,14 @@ export const login: RequestHandler<
 		if (!user)
 			return res
 				.setStatus(404)
-				.json({ message: 'Could not connect with the provided credentials' });
+				.json({ message: "Yikes, something's not right, please try again" });
 
 		const isValid =
 			Boolean(user.password) && (await bcrypt.compare(password, user.password));
 		if (!isValid)
 			return res
 				.setStatus(403)
-				.json({ message: 'Could not connect with the provided credentials' });
+				.json({ message: "Yikes, something's not right, please try again" });
 
 		const token = await create(
 			{ alg: 'HS512', typ: 'JWT' },
