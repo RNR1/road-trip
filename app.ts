@@ -22,13 +22,11 @@ app.get('/', (_, res) =>
 app.use(errorHandler);
 app.use(logger);
 
-if (import.meta.main) {
-	const port = Number(Deno.env.get('PORT'));
-	const { args } = Deno;
-	const argPort = parse(args).port;
-	app.listen(argPort ? Number(argPort) : port, () =>
-		console.log(`Server started on port ${port}`)
-	);
-}
+const port = Number(Deno.env.get('PORT'));
+const { args } = Deno;
+const argPort = parse(args).port;
+app.listen(argPort ? Number(argPort) : port, () =>
+	console.log(`Server started on port ${port}`)
+);
 
 export default app;
