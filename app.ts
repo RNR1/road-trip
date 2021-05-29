@@ -1,6 +1,7 @@
 import { opine, json } from 'opine';
 import { opineCors } from 'cors';
 import { config } from 'dotenv';
+import { parse } from 'flags';
 import { connect } from 'db';
 import { errorHandler, logger } from 'middleware';
 import { auth } from 'routes';
@@ -23,7 +24,11 @@ app.use(logger);
 
 if (import.meta.main) {
 	const port = Number(Deno.env.get('PORT'));
-	app.listen(port, () => console.log(`Server started on port ${port}`));
+	const { args } = Deno;
+	const argPort = parse(args).port;
+	app.listen(argPort ? Number(argPort) : port, () =>
+		console.log(`Server started on port ${port}`)
+	);
 }
 
 export default app;
