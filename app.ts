@@ -22,9 +22,8 @@ app.use(errorHandler);
 app.use(logger);
 
 if (import.meta.main) {
-	const server = app.listen();
-	const address = server.listener.addr as Deno.NetAddr;
-	console.log(`Server started on ${address.hostname}:${address.port}`);
+	const port = Number(Deno.env.get('PORT'));
+	app.listen(port, () => console.log(`Server started on port ${port}`));
 }
 
 export default app;
