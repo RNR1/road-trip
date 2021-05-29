@@ -32,11 +32,9 @@ export const signup: RequestHandler<
 			trips: [] as Trip[]
 		});
 		if (!userId)
-			return res
-				.setStatus(500)
-				.json({
-					message: "Yikes, something here doesn't look right, please try again"
-				});
+			return res.setStatus(500).json({
+				message: "Yikes, something here doesn't look right, please try again"
+			});
 		const token = await create(
 			{ alg: 'HS512', typ: 'JWT' },
 			{ id: userId },
@@ -50,7 +48,11 @@ export const signup: RequestHandler<
 	} catch (error) {
 		if (!(error.message as string).includes('E11000')) return next(error);
 		res.setStatus(403);
-		next(new Error('Email already exists'));
+		next(
+			new Error(
+				"There's already an account with this email address. Did you mean to log in?"
+			)
+		);
 	}
 };
 
