@@ -41,7 +41,7 @@ export const signup: RequestHandler<
 			'secret'
 		);
 		res.setStatus(201).json({
-			message: 'User created successfully!',
+			message: 'Your account was successfully created!',
 			token,
 			userId
 		});
@@ -82,7 +82,7 @@ export const login: RequestHandler<
 			Deno.env.get('SECRET_KEY')!
 		);
 		res.setStatus(200).json({
-			message: 'Login successful',
+			message: "You're all set!",
 			token,
 			userId: user._id.$oid,
 			email: user.email
