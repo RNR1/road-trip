@@ -1,4 +1,5 @@
 import { RequestHandler } from 'opine';
+import { getId } from 'db';
 import * as bcrypt from 'bcrypt';
 import { isEmail } from 'isEmail';
 import { create } from 'jwt';
@@ -7,7 +8,7 @@ import 'loadEnv';
 
 export const signup: RequestHandler<
 	Omit<User, '_id' | 'trips'>,
-	{ message: string; token?: string; userId?: unknown }
+	{ message: string; token?: string; id?: string } & Partial<User>
 > = async (req, res, next) => {
 	try {
 		const { firstName, lastName, email, password } = req.body;
@@ -24,7 +25,7 @@ export const signup: RequestHandler<
 			);
 		}
 		const hashedPassword = await bcrypt.hash(password);
-		const userId = await users().insertOne({
+		const userId = await users()?.insertOne({
 			firstName,
 			lastName,
 			email: email.toLowerCase(),
@@ -40,10 +41,14 @@ export const signup: RequestHandler<
 			{ id: userId },
 			'secret'
 		);
+
 		res.setStatus(201).json({
 			message: 'Your account was successfully created!',
 			token,
-			userId
+			id: userId.toString(),
+			email: email.toLowerCase(),
+			firstName,
+			lastName
 		});
 	} catch (error) {
 		if (!(error.message as string).includes('E11000')) return next(error);
@@ -58,12 +63,15 @@ export const signup: RequestHandler<
 
 export const login: RequestHandler<
 	{ email: string; password: string },
-	{ message: string; token?: string; userId?: string; email?: string },
+	{ message: string; token?: string; id?: string } & Partial<User>,
 	Record<string, unknown>
 > = async (req, res, next) => {
 	try {
 		const { email, password } = req.body;
-		const user = await users().findOne({ email }, { noCursorTimeout: false });
+		const user: User | undefined = await users()?.findOne(
+			{ email },
+			{ noCursorTimeout: false }
+		);
 		if (!user)
 			return res
 				.setStatus(404)
@@ -78,14 +86,16 @@ export const login: RequestHandler<
 
 		const token = await create(
 			{ alg: 'HS512', typ: 'JWT' },
-			{ id: user._id.$oid, email: user.email },
+			{ id: getId(user._id), email: user.email },
 			Deno.env.get('SECRET_KEY')!
 		);
+
+		const { password: _, trips: __, _id, ...rest } = user;
 		res.setStatus(200).json({
 			message: "You're all set!",
 			token,
-			userId: user._id.$oid,
-			email: user.email
+			...rest,
+			id: getId(_id)
 		});
 	} catch (error) {
 		next(error);

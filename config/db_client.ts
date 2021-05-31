@@ -1,5 +1,5 @@
 import 'loadEnv';
-import { MongoClient } from 'mongo';
+import { MongoClient, Bson } from 'mongo';
 import * as log from 'logger';
 
 let db: ReturnType<MongoClient['database']>;
@@ -19,4 +19,8 @@ export async function connect() {
 
 export function getDb(): typeof db {
 	return db;
+}
+
+export function getId(_id: { $oid: string }): string {
+	return new Bson.ObjectID(_id).toHexString();
 }
