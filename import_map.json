@@ -13,12 +13,12 @@
 		"opine": "https://deno.land/x/opine@1.4.0/mod.ts",
 		"superdeno": "https://deno.land/x/superdeno@4.2.0/mod.ts",
 		"app": "./app.ts",
-		"routes": "./routes/index.ts",
-		"controller": "./controller/index.ts",
+		"routes": "./routes/mod.ts",
+		"controller": "./controller/mod.ts",
 		"consts": "./config/constants.ts",
 		"db": "./config/db_client.ts",
-		"models": "./models/index.ts",
-		"middleware": "./middleware/index.ts",
+		"models": "./models/mod.ts",
+		"middleware": "./middleware/mod.ts",
 		"testing": "./tests/deps.ts"
 	}
 }
