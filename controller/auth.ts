@@ -1,9 +1,11 @@
 import { RequestHandler } from 'opine';
+import { uploadImage } from 'cloudinary';
 import { getId } from 'db';
 import * as bcrypt from 'bcrypt';
 import { isEmail } from 'isEmail';
 import { create } from 'jwt';
 import { User, users, Trip } from 'models';
+import { UploadAPIResponse } from 'types/cloudinary';
 import 'loadEnv';
 
 export const signup: RequestHandler<
@@ -11,7 +13,8 @@ export const signup: RequestHandler<
 	{ message: string; token?: string; id?: string } & Partial<User>
 > = async (req, res, next) => {
 	try {
-		const { firstName, lastName, email, password } = req.body;
+		const { firstName, lastName, email, password, avatar } = req.body;
+
 		if (
 			!firstName?.trim?.()?.length ||
 			!lastName?.trim?.()?.length ||
@@ -24,18 +27,29 @@ export const signup: RequestHandler<
 				"Yikes, something here doesn't look right, please try again"
 			);
 		}
+		let asset: UploadAPIResponse;
+		if (Boolean(avatar) && typeof avatar !== 'string') {
+			res.setStatus(400);
+			throw new Error('Invalid avatar');
+		} else {
+			asset = await uploadImage(avatar);
+			if (asset.error) throw new Error('We had a problem with your avatar');
+		}
 		const hashedPassword = await bcrypt.hash(password);
 		const userId = await users()?.insertOne({
+			avatar: asset.error ? undefined : asset.url,
 			firstName,
 			lastName,
 			email: email.toLowerCase(),
 			password: hashedPassword,
 			trips: [] as Trip[]
 		});
-		if (!userId)
-			return res.setStatus(500).json({
-				message: "Yikes, something here doesn't look right, please try again"
-			});
+		if (!userId) {
+			res.setStatus(500);
+			throw new Error(
+				"Yikes, something here doesn't look right, please try again"
+			);
+		}
 		const token = await create(
 			{ alg: 'HS512', typ: 'JWT' },
 			{ id: userId },
@@ -46,6 +60,7 @@ export const signup: RequestHandler<
 			message: 'Your account was successfully created!',
 			token,
 			id: userId.toString(),
+			avatar: asset.url,
 			email: email.toLowerCase(),
 			firstName,
 			lastName

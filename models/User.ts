@@ -3,6 +3,7 @@ import { Trip } from './Trip.ts';
 
 export interface User {
 	_id: { $oid: string };
+	avatar: string;
 	firstName: string;
 	lastName: string;
 	email: string;
