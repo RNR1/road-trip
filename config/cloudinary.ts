@@ -22,18 +22,19 @@ export function getUploadURI() {
 	}
 }
 
-function createSignature(publicId: string, timestamp: number) {
-	const input = `public_id=${publicId}&timestamp=${timestamp}${API_SECRET}`;
+function createSignature(publicId: string, timestamp: number, eager: string) {
+	const input = `eager=${eager}&public_id=${publicId}&timestamp=${timestamp}${API_SECRET}`;
 	return sha1(input, 'utf8', 'hex');
 }
 
-export function uploadImage(file: string): Promise<UploadAPIResponse> {
+export async function uploadImage(file: string): Promise<UploadAPIResponse> {
 	const URL = getUploadURI();
 	const timestamp = Date.now();
 	const publicId = `avatar_${timestamp}`;
-	const signature = createSignature(publicId, timestamp);
+	const eager = 'w_100,h_100,c_thumb,g_face,r_max';
+	const signature = createSignature(publicId, timestamp, eager);
 
-	return fetch(URL ?? '', {
+	const response = await fetch(URL ?? '', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({
@@ -41,7 +42,9 @@ export function uploadImage(file: string): Promise<UploadAPIResponse> {
 			timestamp,
 			api_key: API_KEY,
 			public_id: publicId,
+			eager,
 			signature
 		})
-	}).then(response => response.json());
+	});
+	return await response.json();
 }

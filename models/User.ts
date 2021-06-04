@@ -11,6 +11,12 @@ export interface User {
 	trips: Trip[];
 }
 
+export type AuthResponse = {
+	message: string;
+	token?: string;
+	id?: string;
+} & Partial<User>;
+
 const users = () => getDb()?.collection<User>('users');
 
 export default users;

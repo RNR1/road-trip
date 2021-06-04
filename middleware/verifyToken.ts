@@ -1,18 +1,23 @@
 import 'loadEnv';
 import { verify } from 'jwt';
-import type { Response, NextFunction } from 'opine';
+import type { Request, Response, NextFunction } from 'opine';
 
-const verifyToken = async (
-	req: { headers: Headers; user: unknown },
-	res: Response,
-	next: NextFunction
-) => {
-	const token = req.headers.get('x-auth-token');
-	if (!token) return res.setStatus(401).json({ message: 'No token provided' });
+const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
+	const token = req.headers.get('Authorization');
 
+	if (!token) {
+		res.setStatus(401);
+		throw new Error('No token has provided');
+	}
 	try {
-		const payload = await verify(token, Deno.env.get('SECRET_KEY')!, 'HS512');
-		req.user = payload;
+		const payload = await verify(
+			token.replace('Bearer ', ''),
+			Deno.env.get('SECRET_KEY')!,
+			'HS512'
+		);
+		(
+			req as unknown as { headers: Headers; user: Record<string, unknown> }
+		).user = payload;
 		next();
 	} catch (error) {
 		next(error);
