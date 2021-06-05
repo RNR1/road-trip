@@ -9,12 +9,16 @@ type Node = {
 		src: { value: string };
 	};
 	children: Node[];
+	click: () => void;
 	querySelector: (selector: string) => Node;
+	querySelectorAll: (selector: string) => Node[];
 	textContent: string;
 	innerHTML: string;
 };
 
 enum Selector {
+	Language = '[location="Language and currency"]',
+	LanguageDialog = 'div[role="dialog"]',
 	Location = '#bigsearch-query-detached-query',
 	CheckIn = '[data-testid="structured-search-input-field-split-dates-0"]',
 	CheckOut = '[data-testid="structured-search-input-field-split-dates-1"]',
@@ -46,10 +50,11 @@ export async function searchInAirBnB(options: ReservationSearchOptions) {
 		args: [
 			'--no-sandbox',
 			'--incognito',
-			'--no-sandbox',
 			'--single-process',
 			'--no-zygote',
-			'--disable-setuid-sandbox'
+			'--disable-setuid-sandbox',
+			'--start-maximized',
+			'--lang=en-US'
 		]
 	});
 	logger.info('puppeteer - Launched browser.');
@@ -70,7 +75,7 @@ export async function searchInAirBnB(options: ReservationSearchOptions) {
 			`puppeteer - Clicked on the check in button, looking for selector.`
 		);
 
-		await page.waitForSelector(checkInSelector, { timeout: 1000 * 10 });
+		await page.waitForSelector(checkInSelector, { timeout: 1000 * 5 });
 		logger.info(`puppeteer - Selector found.`);
 
 		await page.click(checkInSelector);
@@ -85,7 +90,7 @@ export async function searchInAirBnB(options: ReservationSearchOptions) {
 		await page.click(Selector.SearchButton, { delay: 400 });
 		logger.info(`puppeteer - Clicked search, waiting for selector`);
 
-		await page.waitForSelector(Selector.SearchResult, { timeout: 1000 * 10 });
+		await page.waitForSelector(Selector.SearchResult, { timeout: 1000 * 5 });
 
 		logger.info(`puppeteer - Collecting data`);
 		const results = await page.$$eval(Selector.SearchResult, nodes => {
