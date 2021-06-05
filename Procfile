@@ -1,1 +1,2 @@
-web: deno run -A --unstable https://deno.land/x/puppeteer@9.0.1/install.ts && deno run --import-map=import_map.json --config=tsconfig.json --allow-net --allow-read --allow-env --unstable --allow-write app.ts --port=${PORT}
+release: deno run -A --unstable https://deno.land/x/puppeteer@9.0.1/install.ts
+web: deno run --import-map=import_map.json --config=tsconfig.json --allow-net --allow-read --allow-env --unstable --allow-write app.ts --port=${PORT}
