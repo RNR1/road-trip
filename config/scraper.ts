@@ -61,6 +61,7 @@ export async function searchInAirBnB(options: ReservationSearchOptions) {
 		await page.goto(URL);
 		logger.info(`puppeteer - Went to ${URL}`);
 
+		await page.click(Selector.Location);
 		await page.type(Selector.Location, location);
 		logger.info(`puppeteer - Entered a location: ${location}.`);
 
