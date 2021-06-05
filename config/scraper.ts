@@ -102,8 +102,8 @@ export async function searchInAirBnB(options: ReservationSearchOptions) {
 						?.attributes.content.value,
 					image: children[3].querySelector('img').attributes.src.value,
 					description: content.children[0].children[0].children[0].textContent,
-					properties: content.children[2].textContent.split(' · '),
-					services: content.children[3].textContent.split(' · '),
+					properties: content.children[2].textContent?.split(' · '),
+					services: content.children[3].textContent?.split(' · '),
 					price: Number(
 						children
 							.find(
@@ -112,8 +112,8 @@ export async function searchInAirBnB(options: ReservationSearchOptions) {
 									item.textContent.includes('$')
 							)
 							?.textContent.replace('/ night', '')
-							.split('₪')[1]
-							.split(' ')[0]
+							?.split('₪')[1]
+							?.split(' ')[0]
 					)
 				};
 			});
