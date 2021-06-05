@@ -112,7 +112,7 @@ export async function searchInAirBnB(options: ReservationSearchOptions) {
 									item.textContent.includes('$')
 							)
 							?.textContent.replace('/ night', '')
-							?.split('₪')[1]
+							?.split('$')[1]
 							?.split(' ')[0]
 					)
 				};
