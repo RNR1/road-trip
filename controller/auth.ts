@@ -1,8 +1,9 @@
-import { RequestHandler, Request, Response, NextFunction } from 'opine';
+import { RequestHandler, Response, NextFunction } from 'opine';
 import { uploadImage } from 'cloudinary';
 import { getId } from 'db';
 import * as bcrypt from 'bcrypt';
 import { isEmail } from 'isEmail';
+import { TokenRequest } from 'middleware';
 import { create, getNumericDate } from 'jwt';
 import { AuthResponse, User, users, Trip } from 'models';
 import { UploadAPIResponse } from 'types/cloudinary';
@@ -131,13 +132,10 @@ export const login: RequestHandler<
 };
 
 export const returnToken = (
-	req: Request,
+	req: TokenRequest,
 	res: Response,
 	next: NextFunction
 ) => {
-	res.setStatus(200).json({
-		...((req as unknown as { user: Record<string, unknown> })
-			.user as AuthResponse)
-	});
+	res.setStatus(200).json({ ...req.user });
 	next();
 };

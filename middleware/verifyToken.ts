@@ -2,7 +2,15 @@ import 'loadEnv';
 import { verify } from 'jwt';
 import type { Request, Response, NextFunction } from 'opine';
 
-const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
+export interface TokenRequest extends Request {
+	user?: Record<string, unknown>;
+}
+
+const verifyToken = async (
+	req: TokenRequest,
+	res: Response,
+	next: NextFunction
+) => {
 	const token = req.headers.get('Authorization');
 
 	if (!token) {
@@ -15,9 +23,7 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
 			Deno.env.get('SECRET_KEY')!,
 			'HS512'
 		);
-		(
-			req as unknown as { headers: Headers; user: Record<string, unknown> }
-		).user = payload;
+		req.user = payload;
 		next();
 	} catch (error) {
 		next(error);

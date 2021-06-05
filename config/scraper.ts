@@ -40,7 +40,18 @@ export async function searchInAirBnB(options: ReservationSearchOptions) {
 	const checkInSelector = `[data-testid="datepicker-day-${checkInDate}"]`;
 	const checkOutDate = format(new Date(out), 'yyyy-MM-dd');
 	const checkOutSelector = `[data-testid="datepicker-day-${checkOutDate}"]`;
-	const browser = await puppeteer.launch();
+	const browser = await puppeteer.launch({
+		headless: true,
+		product: 'chrome',
+		args: [
+			'--no-sandbox',
+			'--incognito',
+			'--no-sandbox',
+			'--single-process',
+			'--no-zygote',
+			'--disable-setuid-sandbox'
+		]
+	});
 	logger.info('puppeteer - Launched browser.');
 	try {
 		const page = await browser.newPage();
@@ -51,7 +62,7 @@ export async function searchInAirBnB(options: ReservationSearchOptions) {
 		logger.info(`puppeteer - Went to ${URL}`);
 
 		await page.type(Selector.Location, location);
-		logger.info(`puppeteer - Entered a location.`);
+		logger.info(`puppeteer - Entered a location: ${location}.`);
 
 		await page.click(Selector.CheckIn);
 		logger.info(
