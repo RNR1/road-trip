@@ -99,9 +99,10 @@ export async function searchInAirBnB(
 					title: children.find(
 						item => item?.attributes.itemprop.value === 'name'
 					)?.attributes.content.value as string,
-					url:
+					url: `https://${
 						children.find(item => item?.attributes.itemprop.value === 'url')
-							?.attributes.content.value ?? '',
+							?.attributes.content.value ?? ''
+					}`,
 					image: children[3].querySelector('img').attributes.src.value,
 					description: content.children[0].children[0].children[0].textContent,
 					properties: content.children[2].textContent?.split(' · '),
