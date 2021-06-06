@@ -32,7 +32,7 @@ enum Selector {
 
 const URL = 'https://www.airbnb.com/';
 
-export async function searchInAirBnB(
+export async function searchInAirbnb(
 	options: ReservationSearchOptions
 ): Promise<Reservation[]> {
 	const { location, in: checkIn, out, for: guests } = options;
@@ -126,7 +126,7 @@ export async function searchInAirBnB(
 	} catch (err) {
 		logger.error(`puppeteer - ${err}`);
 		throw new Error(
-			'We had a problem fetching information from AirBnB, please try again'
+			'We had a problem fetching information from Airbnb, please try again'
 		);
 	} finally {
 		await browser.close();
