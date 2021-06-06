@@ -121,7 +121,7 @@ export async function searchInAirBnB(
 			});
 		});
 		logger.info('puppeteer - Collected data successfully');
-		return results.jsonValue();
+		return results as unknown as Reservation[];
 	} catch (err) {
 		logger.error(`puppeteer - ${err}`);
 		throw new Error(
