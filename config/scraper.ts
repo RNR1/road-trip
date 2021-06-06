@@ -1,6 +1,7 @@
 import puppeteer from 'puppeteer';
 import { format } from 'datetime';
 import * as logger from 'logger';
+import type { ReservationSearchOptions, Reservation } from 'models';
 
 type Node = {
 	attributes: {
@@ -31,14 +32,9 @@ enum Selector {
 
 const URL = 'https://www.airbnb.com/';
 
-export type ReservationSearchOptions = {
-	location: string;
-	in: string;
-	out: string;
-	for: number;
-};
-
-export async function searchInAirBnB(options: ReservationSearchOptions) {
+export async function searchInAirBnB(
+	options: ReservationSearchOptions
+): Promise<Reservation[]> {
 	const { location, in: checkIn, out, for: guests } = options;
 	const checkInDate = format(new Date(checkIn), 'yyyy-MM-dd');
 	const checkInSelector = `[data-testid="datepicker-day-${checkInDate}"]`;
@@ -103,8 +99,9 @@ export async function searchInAirBnB(options: ReservationSearchOptions) {
 					title: children.find(
 						item => item?.attributes.itemprop.value === 'name'
 					)?.attributes.content.value as string,
-					url: children.find(item => item?.attributes.itemprop.value === 'url')
-						?.attributes.content.value,
+					url:
+						children.find(item => item?.attributes.itemprop.value === 'url')
+							?.attributes.content.value ?? '',
 					image: children[3].querySelector('img').attributes.src.value,
 					description: content.children[0].children[0].children[0].textContent,
 					properties: content.children[2].textContent?.split(' · '),
@@ -124,7 +121,7 @@ export async function searchInAirBnB(options: ReservationSearchOptions) {
 			});
 		});
 		logger.info('puppeteer - Collected data successfully');
-		return results;
+		return results.jsonValue();
 	} catch (err) {
 		logger.error(`puppeteer - ${err}`);
 		throw new Error(

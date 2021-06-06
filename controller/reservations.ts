@@ -1,9 +1,10 @@
 import { RequestHandler } from 'opine';
-import { searchInAirBnB, ReservationSearchOptions } from 'scraper';
+import { searchInAirBnB } from 'scraper';
+import type { Reservation, ReservationSearchOptions } from 'models';
 
 export const search: RequestHandler<
 	Record<string, string>,
-	{ message: string; results: unknown },
+	{ message: string; results: Reservation[] },
 	ReservationSearchOptions
 > = async (req, res, next) => {
 	const { location, in: checkIn, out, for: guests } = req.query;
@@ -15,6 +16,9 @@ export const search: RequestHandler<
 		throw new Error(`Param '${key}' is missing.`);
 	}
 	const results = await searchInAirBnB(options);
-	res.json({ message: 'In progress', results });
+	res.json({
+		message: 'Here are the relevant results we found on AirBnB',
+		results
+	});
 	next();
 };
