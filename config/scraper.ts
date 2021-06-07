@@ -98,6 +98,9 @@ export async function searchInAirbnb(
 		logger.info(`puppeteer - Successfully entered check in and check out`);
 
 		await page.click(Selector.Guests);
+		await page.waitForSelector(Selector.AdultIncrementor, {
+			timeout: 1000 * 5
+		});
 		for (let i = 0; i < guests; i += 1)
 			await page.click(Selector.AdultIncrementor, { delay: 200 });
 		logger.info(`puppeteer - Added amount of guests`);
