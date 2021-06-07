@@ -1,5 +1,5 @@
 import puppeteer from 'puppeteer';
-import { format } from 'datetime';
+import { format, difference } from 'datetime';
 import * as logger from 'logger';
 import type { ReservationSearchOptions, Reservation } from 'models';
 
@@ -21,6 +21,8 @@ enum Selector {
 	Language = '[location="Language and currency"]',
 	LanguageDialog = 'div[role="dialog"]',
 	Location = '#bigsearch-query-detached-query',
+	NextMonth = '[aria-label="Next"]',
+	PrevMonth = '[aria-label="Previous"]',
 	CheckIn = '[data-testid="structured-search-input-field-split-dates-0"]',
 	CheckOut = '[data-testid="structured-search-input-field-split-dates-1"]',
 	Guests = '[data-testid="structured-search-input-field-guests-button"]',
@@ -37,8 +39,18 @@ export async function searchInAirbnb(
 ): Promise<Reservation[]> {
 	const { location, in: checkIn, out, for: guests } = options;
 	const checkInDate = format(new Date(checkIn), 'yyyy-MM-dd');
+	const { months = 0 } = difference(new Date(), new Date(checkIn), {
+		units: ['months']
+	});
 	const checkInSelector = `[data-testid="datepicker-day-${checkInDate}"]`;
 	const checkOutDate = format(new Date(out), 'yyyy-MM-dd');
+	const { months: checkoutMonths = 0 } = difference(
+		new Date(checkIn),
+		new Date(out),
+		{
+			units: ['months']
+		}
+	);
 	const checkOutSelector = `[data-testid="datepicker-day-${checkOutDate}"]`;
 	const browser = await puppeteer.launch({
 		headless: true,
@@ -71,10 +83,17 @@ export async function searchInAirbnb(
 			`puppeteer - Clicked on the check in button, looking for selector.`
 		);
 
+		await page.waitForSelector(Selector.NextMonth, { timeout: 1000 * 5 });
+		for (let i = 0; i < months; i++) await page.click(Selector.NextMonth);
 		await page.waitForSelector(checkInSelector, { timeout: 1000 * 5 });
 		logger.info(`puppeteer - Selector found.`);
 
 		await page.click(checkInSelector);
+
+		for (let i = 0; i < checkoutMonths; i++)
+			await page.click(Selector.NextMonth);
+
+		await page.waitForSelector(checkOutSelector, { timeout: 1000 * 5 });
 		await page.click(checkOutSelector, { delay: 1000 });
 		logger.info(`puppeteer - Successfully entered check in and check out`);
 
