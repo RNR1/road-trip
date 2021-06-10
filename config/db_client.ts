@@ -1,5 +1,6 @@
 import 'loadEnv';
 import { MongoClient, Bson } from 'mongo';
+import type { Database } from 'mongo/database';
 import * as log from 'logger';
 
 let db: ReturnType<MongoClient['database']>;
@@ -17,7 +18,7 @@ export async function connect() {
 	}
 }
 
-export function getDb(): typeof db {
+export function getDb(): Database {
 	return db;
 }
 

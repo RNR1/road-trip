@@ -12,6 +12,8 @@
 		"loadEnv": "https://deno.land/x/dotenv@v2.0.0/load.ts",
 		"logger": "https://deno.land/std@0.97.0/log/mod.ts",
 		"mongo": "https://deno.land/x/mongo@v0.23.1/mod.ts",
+		"mongo/collection": "https://deno.land/x/mongo@v0.23.1/src/collection/mod.ts",
+		"mongo/database": "https://deno.land/x/mongo@v0.23.1/src/database.ts",
 		"opine": "https://deno.land/x/opine@1.4.0/mod.ts",
 		"puppeteer": "https://deno.land/x/puppeteer@9.0.1/mod.ts",
 		"superdeno": "https://deno.land/x/superdeno@4.2.0/mod.ts",

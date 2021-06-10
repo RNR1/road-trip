@@ -1,3 +1,4 @@
+import type { Collection } from 'mongo/collection';
 import { getDb } from 'db';
 import { Trip } from './Trip.ts';
 
@@ -17,6 +18,7 @@ export type AuthResponse = {
 	id?: string;
 } & Partial<User>;
 
-const users = () => getDb()?.collection<User>('users');
+const users = (): Collection<User> =>
+	getDb()?.collection<User>('users') as Collection<User>;
 
 export default users;

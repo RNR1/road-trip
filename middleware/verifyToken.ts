@@ -4,6 +4,8 @@ import type { Request, Response, NextFunction } from 'opine';
 
 export interface TokenRequest extends Request {
 	user?: Record<string, unknown>;
+	body: Record<string, unknown>;
+	query: Record<string, unknown>;
 }
 
 const verifyToken = async (

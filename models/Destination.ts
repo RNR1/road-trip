@@ -1,3 +1,4 @@
 export interface Destination {
-	detail: string;
+	name: string;
+	location: { lat: number; lon: number };
 }
