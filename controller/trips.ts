@@ -25,6 +25,33 @@ export const getTrips = async (
 	}
 };
 
+export const getTrip = async (
+	req: TokenRequest,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		const { id } = req.params;
+		const result = await trips()?.findOne(
+			{
+				_id: new Bson.ObjectID(id),
+				participants: { $elemMatch: { $eq: new Bson.ObjectID(req.user?.id) } }
+			},
+			{ noCursorTimeout: false }
+		);
+		if (!result) {
+			res.setStatus(404);
+			throw new Error("We couldn't find your trip.");
+		}
+		res.json(result);
+		next();
+	} catch (error) {
+		if (error.message.includes('a Buffer or string of 12 bytes'))
+			error.message = "We couldn't find your trip.";
+		next(error);
+	}
+};
+
 export const addTrip = async (
 	req: TokenRequest,
 	res: Response,

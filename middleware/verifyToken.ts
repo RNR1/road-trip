@@ -6,6 +6,7 @@ export interface TokenRequest extends Request {
 	user?: Record<string, unknown>;
 	body: Record<string, unknown>;
 	query: Record<string, unknown>;
+	params: Record<string, string>;
 }
 
 const verifyToken = async (
