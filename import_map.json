@@ -18,6 +18,7 @@
 		"puppeteer": "https://deno.land/x/puppeteer@9.0.1/mod.ts",
 		"superdeno": "https://deno.land/x/superdeno@4.2.0/mod.ts",
 		"sha1": "https://denopkg.com/chiefbiiko/sha1/mod.ts",
+		"slugify": "https://deno.land/x/slugify@0.3.0/mod.ts",
 		"app": "./app.ts",
 		"cloudinary": "./config/cloudinary.ts",
 		"routes": "./routes/mod.ts",

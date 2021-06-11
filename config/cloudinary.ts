@@ -27,11 +27,13 @@ function createSignature(publicId: string, timestamp: number, eager: string) {
 	return sha1(input, 'utf8', 'hex');
 }
 
-export async function uploadImage(file: string): Promise<UploadAPIResponse> {
+export async function uploadImage(
+	file: string,
+	eager = 'w_100,h_100,c_thumb,g_face,r_max'
+): Promise<UploadAPIResponse> {
 	const URL = getUploadURI();
 	const timestamp = Date.now();
 	const publicId = `avatar_${timestamp}`;
-	const eager = 'w_100,h_100,c_thumb,g_face,r_max';
 	const signature = createSignature(publicId, timestamp, eager);
 
 	const response = await fetch(URL ?? '', {

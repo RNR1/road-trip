@@ -3,15 +3,19 @@ import { Collection } from 'mongo/collection';
 import { User } from './User.ts';
 import { Note } from './Note.ts';
 import { Track } from './Track.ts';
+
 export interface Trip {
 	_id: { $oid: string };
 	name: string;
+	slug: string;
+	description: string;
+	image: { src: string; alt: string };
 	participants: User[];
 	notes: Note[];
 	track: Track;
 }
 
 const trips = (): Collection<Trip> =>
-	getDb()?.collection<Trip>('trips') as Collection<Trip>;
+	getDb().collection<Trip>('trips') as Collection<Trip>;
 
 export default trips;

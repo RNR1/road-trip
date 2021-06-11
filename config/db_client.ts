@@ -3,7 +3,7 @@ import { MongoClient, Bson } from 'mongo';
 import type { Database } from 'mongo/database';
 import * as log from 'logger';
 
-let db: ReturnType<MongoClient['database']>;
+let db: Database;
 
 export async function connect() {
 	try {
@@ -14,7 +14,7 @@ export async function connect() {
 		db = client.database('roadTrip');
 		log.info('Connected to MongoDB');
 	} catch (err) {
-		console.error(err.message);
+		log.error(err.message);
 	}
 }
 
