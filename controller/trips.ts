@@ -91,7 +91,7 @@ export const addTrip = async (
 
 		let asset: UploadAPIResponse | null = null;
 		if (Boolean(image?.src) && typeof image?.src === 'string') {
-			asset = await uploadImage(image.src, 'c_thumb,g_center,w_300');
+			asset = await uploadImage(image.src, 'c_thumb,g_center,w_200,h_200');
 			if (asset?.error) throw new Error('We had a problem with your image');
 		}
 
