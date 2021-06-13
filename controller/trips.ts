@@ -79,7 +79,7 @@ export const getTrip = async (
 
 export const addTrip = async (
 	req: TokenRequest,
-	res: Response,
+	res: Response<{ message: string; id: string; slug: string }>,
 	next: NextFunction
 ) => {
 	try {
@@ -92,15 +92,17 @@ export const addTrip = async (
 		let asset: UploadAPIResponse | null = null;
 		if (Boolean(image?.src) && typeof image?.src === 'string') {
 			asset = await uploadImage(image.src, 'c_thumb,g_center,w_300');
-			if (asset.error) throw new Error('We had a problem with your image');
+			if (asset?.error) throw new Error('We had a problem with your image');
 		}
+
+		const slug = slugify(`${name} ${format(new Date(), 'MM-dd-yy-hh-mm-ss')}`, {
+			replacement: '-',
+			lower: true
+		});
 
 		const tripId = await trips()?.insertOne({
 			name,
-			slug: slugify(`${name} ${format(new Date(), 'MM-dd-yy-hh-mm-ss')}`, {
-				replacement: '-',
-				lower: true
-			}),
+			slug,
 			description,
 			image: asset?.error
 				? undefined
@@ -109,7 +111,17 @@ export const addTrip = async (
 			notes: [],
 			track: []
 		});
-		res.json({ message: 'Trip has been created Successfully!', id: tripId });
+		if (!tripId) {
+			res.setStatus(500);
+			throw new Error(
+				"Yikes, something here doesn't look right, please try again"
+			);
+		}
+		res.setStatus(201).json({
+			message: 'Trip has been created Successfully!',
+			id: tripId.toString(),
+			slug
+		});
 	} catch (error) {
 		next(error);
 	}
