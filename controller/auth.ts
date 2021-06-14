@@ -1,7 +1,7 @@
 import * as bcrypt from 'bcrypt';
 import { uploadImage } from 'cloudinary';
 import { WEEK } from 'datetime';
-import { getId } from 'db';
+import { getId, objectId } from 'db';
 import { sendMail } from 'emails';
 import { isEmail } from 'isEmail';
 import { create, getNumericDate } from 'jwt';
@@ -150,7 +150,7 @@ export const returnToken = async (
 	next: NextFunction
 ) => {
 	const user = await users()?.findOne(
-		{ _id: req.user?.id },
+		{ _id: objectId(req.user?.id as string) },
 		{
 			noCursorTimeout: false,
 			projection: { _id: 0, createdAt: 0, password: 0 }

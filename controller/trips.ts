@@ -1,6 +1,6 @@
 import { uploadImage } from 'cloudinary';
 import { format } from 'datetime';
-import { Bson } from 'mongo';
+import { getId, objectId } from 'db';
 import type { TokenRequest } from 'middleware';
 import { trips } from 'models';
 import { Response, NextFunction } from 'opine';
@@ -17,7 +17,9 @@ export const getTrips = async (
 		const results = await trips()
 			?.find(
 				{
-					participants: { $elemMatch: { $eq: new Bson.ObjectID(req.user?.id) } }
+					participants: {
+						$elemMatch: { $eq: objectId(req.user?.id) }
+					}
 				},
 				{ noCursorTimeout: false }
 			)
@@ -42,7 +44,7 @@ export const getTrip = async (
 					$match: {
 						slug,
 						participants: {
-							$elemMatch: { $eq: new Bson.ObjectID(req.user?.id) }
+							$elemMatch: { $eq: objectId(req.user?.id) }
 						}
 					}
 				},
@@ -107,7 +109,7 @@ export const addTrip = async (
 			image: asset?.error
 				? undefined
 				: { src: asset?.eager[0]?.url, alt: image?.alt },
-			participants: [new Bson.ObjectID(req.user?.id)],
+			participants: [objectId(req.user?.id)],
 			notes: [],
 			track: []
 		});
@@ -135,7 +137,7 @@ export const removeTrip = async (
 	try {
 		const { id } = req.params;
 		const trip = await trips()?.findOne(
-			{ _id: new Bson.ObjectID(id) },
+			{ _id: objectId(id) },
 			{ noCursorTimeout: false }
 		);
 
@@ -145,15 +147,13 @@ export const removeTrip = async (
 		}
 
 		const byAuthUser = (trip.participants as unknown[]).find(
-			participant =>
-				new Bson.ObjectID(participant).toHexString() ===
-				new Bson.ObjectID(req.user?.id).toHexString()
+			participant => getId(participant as unknown) === getId(req.user?.id)
 		);
 		if (!byAuthUser) {
 			res.setStatus(403);
 			throw new Error('a Trip can be removed only by one of its participant');
 		}
-		await trips()?.deleteOne({ _id: new Bson.ObjectID(id) });
+		await trips()?.deleteOne({ _id: objectId(id) });
 		res.json({ message: 'Trip has been removed Successfully' });
 	} catch (error) {
 		next(error);

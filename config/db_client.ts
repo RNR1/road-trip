@@ -22,6 +22,10 @@ export function getDb(): Database {
 	return db;
 }
 
-export function getId(_id: { $oid: string }): string {
+export function getId(_id: { $oid: string } | unknown): string {
 	return new Bson.ObjectID(_id).toHexString();
+}
+
+export function objectId(id: string | unknown): Bson.ObjectID {
+	return new Bson.ObjectID(id);
 }
