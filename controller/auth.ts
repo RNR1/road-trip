@@ -1,9 +1,10 @@
 import * as bcrypt from 'bcrypt';
 import { uploadImage } from 'cloudinary';
+import { WEEK } from 'datetime';
 import { getId } from 'db';
 import { sendMail } from 'emails';
 import { isEmail } from 'isEmail';
-import { create, getNumericDate } from 'jwt';
+import { create } from 'jwt';
 import { TokenRequest } from 'middleware';
 import { AuthResponse, User, users } from 'models';
 import { RequestHandler, Response, NextFunction } from 'opine';
@@ -62,7 +63,7 @@ export const signup: RequestHandler<Omit<User, '_id'>, AuthResponse> = async (
 				firstName,
 				lastName,
 				avatar: asset.eager[0].url,
-				exp: getNumericDate(604800)
+				exp: WEEK
 			},
 			Deno.env.get('SECRET_KEY')!
 		);
@@ -124,7 +125,8 @@ export const login: RequestHandler<
 				email: user.email,
 				firstName: user.firstName,
 				lastName: user.lastName,
-				avatar: user.avatar
+				avatar: user.avatar,
+				exp: WEEK
 			},
 			Deno.env.get('SECRET_KEY')!
 		);
@@ -142,11 +144,22 @@ export const login: RequestHandler<
 	}
 };
 
-export const returnToken = (
+export const returnToken = async (
 	req: TokenRequest,
 	res: Response,
 	next: NextFunction
 ) => {
-	res.setStatus(200).json({ ...req.user });
+	const user = await users()?.findOne(
+		{ _id: req.user?.id },
+		{
+			noCursorTimeout: false,
+			projection: { _id: 0, createdAt: 0, password: 0 }
+		}
+	);
+	if (!user) {
+		res.setStatus(401);
+		return next(new Error("Yikes, something's not right, please try again"));
+	}
+	res.setStatus(200).json({ ...req.user, ...user });
 	next();
 };

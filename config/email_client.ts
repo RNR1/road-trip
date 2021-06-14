@@ -1,22 +1,24 @@
 import 'loadEnv';
-import { SmtpClient } from 'smtp';
+import { SmtpClient, SendConfig } from 'smtp';
 
-const client = new SmtpClient();
-await client.connectTLS({
-	hostname: 'smtp.gmail.com',
-	port: 465,
-	username: Deno.env.get('GMAIL_USERNAME'),
-	password: Deno.env.get('GMAIL_PASSWORD')
-});
-
-type MailOptions = { to: string; subject: string; content: string };
-
-const sendMail = async (data: MailOptions) => {
-	await client.send({
-		from: 'Ron from On the road',
-		...data
-	});
-	await client.close();
+const sendMail = async (data: Omit<SendConfig, 'from'>) => {
+	const client = new SmtpClient();
+	try {
+		await client.connectTLS({
+			hostname: 'smtp.gmail.com',
+			port: 465,
+			username: Deno.env.get('GMAIL_USERNAME'),
+			password: Deno.env.get('GMAIL_PASSWORD')
+		});
+		await client.send({
+			from: 'Ron from On the road',
+			...data
+		});
+	} catch (error) {
+		throw error;
+	} finally {
+		await client.close();
+	}
 };
 
 export { sendMail };
