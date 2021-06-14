@@ -4,7 +4,7 @@ import { WEEK } from 'datetime';
 import { getId } from 'db';
 import { sendMail } from 'emails';
 import { isEmail } from 'isEmail';
-import { create } from 'jwt';
+import { create, getNumericDate } from 'jwt';
 import { TokenRequest } from 'middleware';
 import { AuthResponse, User, users } from 'models';
 import { RequestHandler, Response, NextFunction } from 'opine';
@@ -63,7 +63,7 @@ export const signup: RequestHandler<Omit<User, '_id'>, AuthResponse> = async (
 				firstName,
 				lastName,
 				avatar: asset.eager[0].url,
-				exp: WEEK
+				exp: getNumericDate(WEEK)
 			},
 			Deno.env.get('SECRET_KEY')!
 		);
@@ -126,7 +126,7 @@ export const login: RequestHandler<
 				firstName: user.firstName,
 				lastName: user.lastName,
 				avatar: user.avatar,
-				exp: WEEK
+				exp: getNumericDate(WEEK)
 			},
 			Deno.env.get('SECRET_KEY')!
 		);
