@@ -1,11 +1,12 @@
-import { RequestHandler, Response, NextFunction } from 'opine';
+import * as bcrypt from 'bcrypt';
 import { uploadImage } from 'cloudinary';
 import { getId } from 'db';
-import * as bcrypt from 'bcrypt';
+import { sendMail } from 'emails';
 import { isEmail } from 'isEmail';
-import { TokenRequest } from 'middleware';
 import { create, getNumericDate } from 'jwt';
+import { TokenRequest } from 'middleware';
 import { AuthResponse, User, users } from 'models';
+import { RequestHandler, Response, NextFunction } from 'opine';
 import type { UploadAPIResponse } from 'types/cloudinary';
 import 'loadEnv';
 
@@ -44,7 +45,8 @@ export const signup: RequestHandler<Omit<User, '_id'>, AuthResponse> = async (
 			firstName,
 			lastName,
 			email: email.toLowerCase(),
-			password: hashedPassword
+			password: hashedPassword,
+			createdAt: new Date().toISOString()
 		});
 		if (!userId) {
 			res.setStatus(500);
@@ -73,6 +75,12 @@ export const signup: RequestHandler<Omit<User, '_id'>, AuthResponse> = async (
 			email: email.toLowerCase(),
 			firstName,
 			lastName
+		});
+		sendMail({
+			to: email,
+			subject: 'Welcome to On the Road!',
+			content:
+				"<h1>Welcome aboard!</h1><p>We're happy to have you here, <br> Visit us at: https://road-trip-client.vercel.app/</p>"
 		});
 		next();
 	} catch (error) {
