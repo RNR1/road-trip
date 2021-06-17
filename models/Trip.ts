@@ -13,6 +13,7 @@ export interface Trip {
 	participants: User[];
 	notes: Note[];
 	track: Track;
+	invitees: User[];
 }
 
 const trips = (): Collection<Trip> =>

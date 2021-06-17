@@ -1,3 +1,4 @@
+import { decode } from 'base64';
 import * as bcrypt from 'bcrypt';
 import { uploadImage } from 'cloudinary';
 import { WEEK } from 'datetime';
@@ -7,6 +8,7 @@ import { isEmail } from 'isEmail';
 import { create, getNumericDate } from 'jwt';
 import { TokenRequest } from 'middleware';
 import { AuthResponse, User, users } from 'models';
+import { Document } from 'mongo';
 import { RequestHandler, Response, NextFunction } from 'opine';
 import type { UploadAPIResponse } from 'types/cloudinary';
 import 'loadEnv';
@@ -17,7 +19,7 @@ export const signup: RequestHandler<Omit<User, '_id'>, AuthResponse> = async (
 	next
 ) => {
 	try {
-		const { firstName, lastName, email, password, avatar } = req.body;
+		const { firstName, lastName, email, password, avatar, key } = req.body;
 
 		if (
 			!firstName?.trim?.()?.length ||
@@ -41,20 +43,29 @@ export const signup: RequestHandler<Omit<User, '_id'>, AuthResponse> = async (
 			if (asset.error) throw new Error('We had a problem with your avatar');
 		}
 		const hashedPassword = await bcrypt.hash(password);
-		const userId = await users()?.insertOne({
+		const document = {
 			avatar: asset.error ? undefined : asset.eager[0]?.url,
 			firstName,
 			lastName,
 			email: email.toLowerCase(),
 			password: hashedPassword,
 			createdAt: new Date().toISOString()
-		});
+		};
+		let userId: Document | null = null;
+		if (key) {
+			const decoder = new TextDecoder();
+			const _id = objectId(decoder.decode(decode(key)));
+			await users()?.updateOne({ _id }, document);
+			userId = _id;
+		} else userId = await users()?.insertOne(document);
+
 		if (!userId) {
 			res.setStatus(500);
 			throw new Error(
 				"Yikes, something here doesn't look right, please try again"
 			);
 		}
+
 		const token = await create(
 			{ alg: 'HS512', typ: 'JWT' },
 			{
@@ -149,17 +160,21 @@ export const returnToken = async (
 	res: Response,
 	next: NextFunction
 ) => {
-	const user = await users()?.findOne(
-		{ _id: objectId(req.user?.id as string) },
-		{
-			noCursorTimeout: false,
-			projection: { _id: 0, createdAt: 0, password: 0 }
+	try {
+		const user = await users()?.findOne(
+			{ _id: objectId(req.user?.id as string) },
+			{
+				noCursorTimeout: false,
+				projection: { _id: 0, createdAt: 0, password: 0 }
+			}
+		);
+		if (!user) {
+			res.setStatus(401);
+			throw new Error("Yikes, something's not right, please try again");
 		}
-	);
-	if (!user) {
-		res.setStatus(401);
-		return next(new Error("Yikes, something's not right, please try again"));
+		res.setStatus(200).json({ ...req.user, ...user });
+		next();
+	} catch (error) {
+		next(error);
 	}
-	res.setStatus(200).json({ ...req.user, ...user });
-	next();
 };

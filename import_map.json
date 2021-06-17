@@ -1,6 +1,7 @@
 {
 	"imports": {
 		"asserts": "https://deno.land/std@0.97.0/testing/asserts.ts",
+		"base64": "https://deno.land/std@0.97.0/encoding/base64.ts",
 		"bcrypt": "https://deno.land/x/bcrypt@v0.2.4/mod.ts",
 		"cors": "https://deno.land/x/cors@v1.2.1/mod.ts",
 		"datetime": "https://deno.land/std@0.97.0/datetime/mod.ts",

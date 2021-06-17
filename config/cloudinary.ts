@@ -1,7 +1,7 @@
 import 'loadEnv';
 import * as log from 'logger';
-import { UploadAPIResponse } from 'types/cloudinary';
-import { sha1 } from 'https://denopkg.com/chiefbiiko/sha1/mod.ts';
+import { sha1 } from 'sha1';
+import type { UploadAPIResponse } from 'types/cloudinary';
 
 const CLOUD_NAME = Deno.env.get('CLOUDINARY_CLOUD_NAME');
 const API_KEY = Deno.env.get('CLOUDINARY_API_KEY');
