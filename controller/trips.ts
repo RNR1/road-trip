@@ -59,21 +59,8 @@ export const getTrip = async (
 					}
 				},
 				{
-					$lookup: {
-						from: 'users',
-						localField: 'invitees',
-						foreignField: '_id',
-						as: 'participants'
-					}
-				},
-				{
 					$project: {
 						participants: {
-							password: 0,
-							email: 0,
-							createdAt: 0
-						},
-						invitees: {
 							password: 0,
 							email: 0,
 							createdAt: 0
@@ -124,9 +111,10 @@ export const addTrip = async (
 			name,
 			slug,
 			description,
-			image: asset?.error
-				? undefined
-				: { src: asset?.eager[0]?.url, alt: image?.alt },
+			image:
+				!asset || asset?.error
+					? undefined
+					: { src: asset?.eager[0]?.url, alt: image?.alt },
 			participants: [objectId(req.user?.id)],
 			notes: [],
 			track: []
