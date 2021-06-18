@@ -59,8 +59,21 @@ export const getTrip = async (
 					}
 				},
 				{
+					$lookup: {
+						from: 'users',
+						localField: 'invitees',
+						foreignField: '_id',
+						as: 'participants'
+					}
+				},
+				{
 					$project: {
 						participants: {
+							password: 0,
+							email: 0,
+							createdAt: 0
+						},
+						invitees: {
 							password: 0,
 							email: 0,
 							createdAt: 0
@@ -256,7 +269,7 @@ export const inviteToTrip = async (
 			sendMail({
 				to: email,
 				subject,
-				content: `${baseContent}<p>To proceed, you can <a href="https://road-trip-client.vercel.app/account/invitations">view your trip invitations</a> in our platform.</p>`
+				content: `${baseContent}<p>To proceed, you can <a href="https://road-trip-client.vercel.app/trips/invitations">view your trip invitations</a> in our platform.</p>`
 			});
 		}
 		res.json({ message: 'We sent an invite to this email address' });
