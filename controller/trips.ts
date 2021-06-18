@@ -59,6 +59,14 @@ export const getTrip = async (
 					}
 				},
 				{
+					$lookup: {
+						from: 'users',
+						localField: 'invitees',
+						foreignField: '_id',
+						as: 'invitees'
+					}
+				},
+				{
 					$project: {
 						participants: {
 							password: 0,
@@ -116,6 +124,7 @@ export const addTrip = async (
 					? undefined
 					: { src: asset?.eager[0]?.url, alt: image?.alt },
 			participants: [objectId(req.user?.id)],
+			invitees: [],
 			notes: [],
 			track: []
 		});
