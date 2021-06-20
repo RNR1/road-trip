@@ -150,12 +150,9 @@ export const updateTrip = async (
 	next: NextFunction
 ) => {
 	try {
-		const { id } = req.params;
+		const { slug } = req.params;
 		const { name, description, image } = req.body as Partial<Trip>;
-		const trip = await trips()?.findOne(
-			{ _id: objectId(id) },
-			{ noCursorTimeout: false }
-		);
+		const trip = await trips()?.findOne({ slug }, { noCursorTimeout: false });
 
 		if (!trip) {
 			res.setStatus(404);
