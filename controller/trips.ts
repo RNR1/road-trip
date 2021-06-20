@@ -144,6 +144,58 @@ export const addTrip = async (
 	}
 };
 
+export const updateTrip = async (
+	req: TokenRequest,
+	res: Response<{ message: string }>,
+	next: NextFunction
+) => {
+	try {
+		const { id } = req.params;
+		const { name, description, image } = req.body as Partial<Trip>;
+		const trip = await trips()?.findOne(
+			{ _id: objectId(id) },
+			{ noCursorTimeout: false }
+		);
+
+		if (!trip) {
+			res.setStatus(404);
+			throw new Error("We couldn't find your trip");
+		}
+
+		const byAuthUser = (trip.participants as unknown[]).find(
+			participant => getId(participant as unknown) === getId(req.user?.id)
+		);
+		if (!byAuthUser) {
+			res.setStatus(403);
+			throw new Error('a Trip can be removed only by one of its participant');
+		}
+
+		let asset: UploadAPIResponse | null = null;
+		if (!image?.src.includes('cloudinary') && image?.src) {
+			asset = await uploadImage(image?.src, 'c_thumb,g_center,w_200,h_200');
+			if (asset?.error) throw new Error('We had a problem with your image');
+		}
+
+		await trips()?.updateOne(
+			{ _id: trip._id },
+			{
+				$set: {
+					name,
+					description,
+					image:
+						asset && !asset?.error
+							? { src: asset.eager[0].url, alt: image?.alt ?? trip?.image?.alt }
+							: trip.image
+				}
+			}
+		);
+
+		res.json({ message: 'We updated your trip information' });
+	} catch (error) {
+		next(error);
+	}
+};
+
 export const getTripInvitations = async (
 	req: TokenRequest,
 	res: Response,

@@ -15,6 +15,7 @@ tripsRouter.put(
 tripsRouter.post('/', verifyPayload, verifyToken, Trips.addTrip);
 tripsRouter.get('/', verifyToken, Trips.getTrips);
 tripsRouter.get('/:slug', verifyToken, Trips.getTrip);
+tripsRouter.patch('/:id', verifyPayload, verifyToken, Trips.updateTrip);
 tripsRouter.delete('/:id', verifyToken, Trips.removeTrip);
 
 export default tripsRouter;
