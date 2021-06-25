@@ -83,7 +83,6 @@ export const getTrip = async (
 						},
 						notes: {
 							trip: 0,
-							updatedAt: 0,
 							createdAt: 0
 						}
 					}
