@@ -10,10 +10,12 @@ export const getNotes = async (
 	next: NextFunction
 ) => {
 	try {
+		const { trip } = req.query as { trip: string };
 		const results = await notes()
 			?.find(
 				{
-					createdBy: objectId(req.user?.id)
+					createdBy: objectId(req.user?.id),
+					trip: trip ? objectId(trip) : undefined
 				},
 				{ noCursorTimeout: false }
 			)
@@ -22,6 +24,10 @@ export const getNotes = async (
 		res.json(results);
 		next();
 	} catch (error) {
+		if (error.message.includes('a Buffer or string of 12 bytes')) {
+			res.setStatus(404);
+			error.message = 'Please provide a valid trip identification.';
+		}
 		next(error);
 	}
 };
