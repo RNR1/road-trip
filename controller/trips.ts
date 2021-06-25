@@ -67,10 +67,23 @@ export const getTrip = async (
 					}
 				},
 				{
+					$lookup: {
+						from: 'notes',
+						localField: 'notes',
+						foreignField: '_id',
+						as: 'notes'
+					}
+				},
+				{
 					$project: {
 						participants: {
 							password: 0,
 							email: 0,
+							createdAt: 0
+						},
+						notes: {
+							trip: 0,
+							updatedAt: 0,
 							createdAt: 0
 						}
 					}
@@ -164,7 +177,7 @@ export const updateTrip = async (
 		);
 		if (!byAuthUser) {
 			res.setStatus(403);
-			throw new Error('a Trip can be removed only by one of its participant');
+			throw new Error('a Trip can be updated only by one of its participant');
 		}
 
 		let asset: UploadAPIResponse | null = null;

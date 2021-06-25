@@ -4,7 +4,7 @@ import { config } from 'dotenv';
 import { parse } from 'flags';
 import { connect } from 'db';
 import { errorHandler, logger } from 'middleware';
-import { auth, reservations, trips } from 'routes';
+import { auth, reservations, trips, notes } from 'routes';
 
 config();
 connect();
@@ -18,6 +18,7 @@ app.use(json());
 app.use('/api/auth', auth);
 app.use('/api/reservations', reservations);
 app.use('/api/trips', trips);
+app.use('/api/notes', notes);
 app.get('/', (_, res) =>
 	res.send('Road trip API, you are probably not looking for us.')
 );
