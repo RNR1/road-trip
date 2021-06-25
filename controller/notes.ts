@@ -14,8 +14,10 @@ export const getNotes = async (
 		const results = await notes()
 			?.find(
 				{
-					createdBy: objectId(req.user?.id),
-					trip: trip ? objectId(trip) : undefined
+					$or: [
+						{ trip: trip ? objectId(trip) : undefined },
+						{ createdBy: objectId(req.user?.id) }
+					]
 				},
 				{ noCursorTimeout: false }
 			)
