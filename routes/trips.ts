@@ -2,7 +2,7 @@ import { Router } from 'opine';
 import { verifyToken, verifyPayload } from 'middleware';
 import { Trips } from 'controller';
 
-export const tripsRouter = Router();
+const tripsRouter = Router();
 
 tripsRouter.get('/invites', verifyToken, Trips.getTripInvitations);
 tripsRouter.post('/invites', verifyPayload, verifyToken, Trips.inviteToTrip);

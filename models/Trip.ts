@@ -2,7 +2,7 @@ import { getDb } from 'db';
 import { Collection } from 'mongo/collection';
 import { User } from './User.ts';
 import { Note } from './Note.ts';
-import { Track } from './Track.ts';
+import { TripPlan } from './TripPlan.ts';
 
 export interface Trip {
 	_id: { $oid: string };
@@ -12,7 +12,7 @@ export interface Trip {
 	image: { src: string; alt: string };
 	participants: User[];
 	notes: Note[];
-	track: Track;
+	plan: TripPlan;
 	invitees: User[];
 }
 

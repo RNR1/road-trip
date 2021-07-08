@@ -2,7 +2,7 @@ import { Router } from 'opine';
 import { verifyToken, verifyPayload } from 'middleware';
 import { Notes } from 'controller';
 
-export const notesRouter = Router();
+const notesRouter = Router();
 
 notesRouter.get('/', verifyToken, Notes.getNotes);
 notesRouter.get('/:id', verifyToken, Notes.getNote);

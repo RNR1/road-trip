@@ -4,10 +4,10 @@ import { format } from 'datetime';
 import { getId, objectId } from 'db';
 import { sendMail } from 'emails';
 import type { TokenRequest } from 'middleware';
-import { trips, users } from 'models';
+import { tripPlans, trips, users } from 'models';
+import type { Trip } from 'models';
 import { Response, NextFunction } from 'opine';
 import { slugify } from 'slugify';
-import type { Trip } from 'models';
 import type { UploadAPIResponse } from 'types/cloudinary';
 
 export const getTrips = async (
@@ -126,7 +126,11 @@ export const addTrip = async (
 			replacement: '-',
 			lower: true
 		});
-
+		const tripPlan = await tripPlans()?.insertOne({
+			origin: '',
+			waypoints: [],
+			destination: ''
+		});
 		const tripId = await trips()?.insertOne({
 			name,
 			slug,
@@ -138,7 +142,7 @@ export const addTrip = async (
 			participants: [objectId(req.user?.id)],
 			invitees: [],
 			notes: [],
-			track: []
+			tripPlan
 		});
 		if (!tripId) {
 			res.setStatus(500);
@@ -146,6 +150,10 @@ export const addTrip = async (
 				"Yikes, something here doesn't look right, please try again"
 			);
 		}
+		tripPlans()?.updateOne(
+			{ _id: objectId(tripPlan) },
+			{ $set: { trip: objectId(tripId) } }
+		);
 		res.setStatus(201).json({
 			message: 'Trip has been created Successfully!',
 			id: tripId.toString(),

@@ -2,7 +2,7 @@ import { Router } from 'opine';
 import { Reservations } from 'controller';
 import { verifyToken } from 'middleware';
 
-export const reservationsRouter = Router();
+const reservationsRouter = Router();
 
 reservationsRouter.get('/search', verifyToken, Reservations.search);
 
