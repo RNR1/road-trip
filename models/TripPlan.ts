@@ -8,6 +8,7 @@ export interface TripPlan {
 	origin: string;
 	waypoints: Waypoint[];
 	destination: string;
+	maxHoursPerDay: number;
 	trip: Trip;
 }
 

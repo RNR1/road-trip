@@ -47,6 +47,7 @@ export const getTripPlan = async (
 							stopover: 1
 						},
 						destination: 1,
+						maxHoursPerDay: 1,
 						trip: {
 							_id: 1
 						}
@@ -80,7 +81,8 @@ export const savePlan = async (
 		const {
 			origin,
 			waypoints = [],
-			destination
+			destination,
+			maxHoursPerDay
 		} = req.body as Partial<TripPlan>;
 		if (!origin?.trim?.()?.length) {
 			res.setStatus(403);
@@ -89,6 +91,17 @@ export const savePlan = async (
 		if (!destination?.trim?.()?.length) {
 			res.setStatus(403);
 			throw new Error('Destination is required');
+		}
+		if (
+			typeof maxHoursPerDay !== 'undefined' &&
+			(typeof maxHoursPerDay !== 'number' ||
+				maxHoursPerDay < 1 ||
+				maxHoursPerDay > 15)
+		) {
+			res.setStatus(403);
+			throw new Error(
+				'Your driving hours per day has to be a number between 1 and 15'
+			);
 		}
 		const tripPlan = await tripPlans()
 			?.aggregate([
@@ -121,7 +134,8 @@ export const savePlan = async (
 					$project: {
 						origin: 1,
 						waypoints: 1,
-						destination: 1
+						destination: 1,
+						maxHoursPerDay: 1
 					}
 				}
 			])
@@ -163,6 +177,7 @@ export const savePlan = async (
 					origin: origin ?? tripPlan.origin,
 					waypoints: upsertedIds,
 					destination: destination ?? tripPlan.destination,
+					maxHoursPerDay: maxHoursPerDay ?? 5,
 					updatedAt: new Date().toISOString()
 				}
 			}
