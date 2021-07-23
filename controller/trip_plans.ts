@@ -1,4 +1,5 @@
-import { getId, objectId } from 'db';
+import * as Aggregation from 'aggregations';
+import { FIND_OPTIONS, getId, objectId } from 'db';
 import { TokenRequest } from 'middleware';
 import { Response, NextFunction } from 'opine';
 import { TripPlan, tripPlans, Waypoint, waypoints as Waypoints } from 'models';
@@ -12,47 +13,11 @@ export const getTripPlan = async (
 		const { id } = req.params;
 		const result = await tripPlans()
 			?.aggregate([
-				{ $match: { _id: objectId(id) } },
-				{
-					$lookup: {
-						from: 'trips',
-						localField: 'trip',
-						foreignField: '_id',
-						as: 'trip'
-					}
-				},
-				{ $unwind: '$trip' },
-				{
-					$match: {
-						'trip.participants': {
-							$elemMatch: { $eq: objectId(req.user?.id) }
-						}
-					}
-				},
-				{
-					$lookup: {
-						from: 'waypoints',
-						localField: 'waypoints',
-						foreignField: '_id',
-						as: 'waypoints'
-					}
-				},
-				{
-					$project: {
-						_id: 1,
-						origin: 1,
-						waypoints: {
-							_id: 1,
-							location: 1,
-							stopover: 1
-						},
-						destination: 1,
-						maxHoursPerDay: 1,
-						trip: {
-							_id: 1
-						}
-					}
-				}
+				Aggregation.matchById(id),
+				...Aggregation.lookupTrip,
+				Aggregation.matchByParticipant(req?.user?.id),
+				Aggregation.lookupWaypoints,
+				Aggregation.getTripPlanProjection
 			])
 			.next();
 
@@ -105,39 +70,11 @@ export const savePlan = async (
 		}
 		const tripPlan = await tripPlans()
 			?.aggregate([
-				{ $match: { _id: objectId(id) } },
-				{
-					$lookup: {
-						from: 'trips',
-						localField: 'trip',
-						foreignField: '_id',
-						as: 'trip'
-					}
-				},
-				{ $unwind: '$trip' },
-				{
-					$match: {
-						'trip.participants': {
-							$elemMatch: { $eq: objectId(req.user?.id) }
-						}
-					}
-				},
-				{
-					$lookup: {
-						from: 'waypoints',
-						localField: 'waypoints',
-						foreignField: '_id',
-						as: 'waypoints'
-					}
-				},
-				{
-					$project: {
-						origin: 1,
-						waypoints: 1,
-						destination: 1,
-						maxHoursPerDay: 1
-					}
-				}
+				Aggregation.matchById(id),
+				...Aggregation.lookupTrip,
+				Aggregation.matchByParticipant(req?.user?.id),
+				Aggregation.lookupWaypoints,
+				Aggregation.savePlanProjection
 			])
 			.next();
 		if (!tripPlan) {
@@ -148,7 +85,7 @@ export const savePlan = async (
 		for (const waypoint of waypoints) {
 			let instance = await Waypoints()?.findOne(
 				{ location: waypoint.location },
-				{ noCursorTimeout: false }
+				FIND_OPTIONS
 			);
 			if (!instance) {
 				instance = (await Waypoints()?.insertOne({

@@ -1,4 +1,4 @@
-import type { Collection } from 'mongo/collection';
+import type { Collection } from 'mongo';
 import { getDb } from 'db';
 
 export interface User {

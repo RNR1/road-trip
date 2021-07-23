@@ -4,7 +4,7 @@ import { config } from 'dotenv';
 import { parse } from 'flags';
 import { connect } from 'db';
 import { errorHandler, logger } from 'middleware';
-import { auth, reservations, trips, tripPlans, notes } from 'routes';
+import * as Router from 'routes';
 
 config();
 connect();
@@ -15,11 +15,14 @@ app.use(opineCors());
 app.use(logger);
 app.use(json());
 
-app.use('/api/auth', auth);
-app.use('/api/notes', notes);
-app.use('/api/reservations', reservations);
-app.use('/api/trips', trips);
-app.use('/api/tripPlans', tripPlans);
+app.use('/api/auth', Router.auth);
+app.use('/api/notes', Router.notes);
+app.use('/api/reservations', Router.reservations);
+app.use('/api/scheduledEvents', Router.scheduledEvents);
+app.use('/api/trips', Router.trips);
+app.use('/api/tripPlans', Router.tripPlans);
+app.use('/api/tripSchedules', Router.tripSchedules);
+
 app.get('/', (_, res) =>
 	res.send('On the road API, you are probably not looking for us.')
 );

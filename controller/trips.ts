@@ -1,10 +1,11 @@
+import * as Aggregation from 'aggregations';
 import { encode } from 'base64';
 import { uploadImage } from 'cloudinary';
 import { format } from 'datetime';
-import { getId, objectId } from 'db';
-import { sendMail } from 'emails';
+import { FIND_OPTIONS, getId, objectId } from 'db';
+import { inviteExistingUser, inviteNewUser, sendMail } from 'emails';
 import type { TokenRequest } from 'middleware';
-import { tripPlans, trips, users } from 'models';
+import { tripPlans, trips, tripSchedules, users } from 'models';
 import type { Trip } from 'models';
 import { Response, NextFunction } from 'opine';
 import { slugify } from 'slugify';
@@ -18,12 +19,8 @@ export const getTrips = async (
 	try {
 		const results = await trips()
 			?.find(
-				{
-					participants: {
-						$elemMatch: { $eq: objectId(req.user?.id) }
-					}
-				},
-				{ noCursorTimeout: false }
+				{ participants: Aggregation.matchElementById(req.user?.id) },
+				FIND_OPTIONS
 			)
 			.toArray();
 		res.json(results);
@@ -45,48 +42,13 @@ export const getTrip = async (
 				{
 					$match: {
 						slug,
-						participants: {
-							$elemMatch: { $eq: objectId(req.user?.id) }
-						}
+						participants: Aggregation.matchElementById(req.user?.id)
 					}
 				},
-				{
-					$lookup: {
-						from: 'users',
-						localField: 'participants',
-						foreignField: '_id',
-						as: 'participants'
-					}
-				},
-				{
-					$lookup: {
-						from: 'users',
-						localField: 'invitees',
-						foreignField: '_id',
-						as: 'invitees'
-					}
-				},
-				{
-					$lookup: {
-						from: 'notes',
-						localField: 'notes',
-						foreignField: '_id',
-						as: 'notes'
-					}
-				},
-				{
-					$project: {
-						participants: {
-							password: 0,
-							email: 0,
-							createdAt: 0
-						},
-						notes: {
-							trip: 0,
-							createdAt: 0
-						}
-					}
-				}
+				Aggregation.lookupUsers('participants'),
+				Aggregation.lookupUsers('invitees'),
+				Aggregation.lookupNotes,
+				Aggregation.getTripProjection
 			])
 			.next();
 		if (!result) {
@@ -131,6 +93,10 @@ export const addTrip = async (
 			waypoints: [],
 			destination: ''
 		});
+		const schedule = await tripSchedules()?.insertOne({
+			events: [],
+			trip: null
+		});
 		const tripId = await trips()?.insertOne({
 			name,
 			slug,
@@ -142,7 +108,8 @@ export const addTrip = async (
 			participants: [objectId(req.user?.id)],
 			invitees: [],
 			notes: [],
-			tripPlan
+			tripPlan,
+			schedule
 		});
 		if (!tripId) {
 			res.setStatus(500);
@@ -150,10 +117,12 @@ export const addTrip = async (
 				"Yikes, something here doesn't look right, please try again"
 			);
 		}
-		tripPlans()?.updateOne(
-			{ _id: objectId(tripPlan) },
-			{ $set: { trip: objectId(tripId) } }
-		);
+		tripPlans()?.updateOne(Aggregation.byId(tripPlan), {
+			$set: { trip: objectId(tripId) }
+		});
+		tripSchedules()?.updateOne(Aggregation.byId(schedule), {
+			$set: { trip: objectId(tripId) }
+		});
 		res.setStatus(201).json({
 			message: 'Trip has been created Successfully!',
 			id: tripId.toString(),
@@ -172,7 +141,7 @@ export const updateTrip = async (
 	try {
 		const { slug } = req.params;
 		const { name, description, image } = req.body as Partial<Trip>;
-		const trip = await trips()?.findOne({ slug }, { noCursorTimeout: false });
+		const trip = await trips()?.findOne({ slug }, FIND_OPTIONS);
 
 		if (!trip) {
 			res.setStatus(404);
@@ -221,12 +190,8 @@ export const getTripInvitations = async (
 	try {
 		const results = await trips()
 			?.find(
-				{
-					invitees: {
-						$elemMatch: { $eq: objectId(req.user?.id) }
-					}
-				},
-				{ noCursorTimeout: false }
+				{ invitees: Aggregation.matchElementById(req.user?.id) },
+				FIND_OPTIONS
 			)
 			.toArray();
 		if (!results) {
@@ -272,27 +237,11 @@ export const inviteToTrip = async (
 				{
 					$match: {
 						_id: objectId(tripId),
-						participants: {
-							$elemMatch: { $eq: objectId(req.user?.id) }
-						}
+						participants: Aggregation.matchElementById(req.user?.id)
 					}
 				},
-				{
-					$lookup: {
-						from: 'users',
-						localField: 'participants',
-						foreignField: '_id',
-						as: 'participants'
-					}
-				},
-				{
-					$project: {
-						participants: {
-							password: 0,
-							email: 0
-						}
-					}
-				}
+				Aggregation.lookupUsers('participants'),
+				Aggregation.inviteProjection
 			])
 			.next();
 		if (!trip) {
@@ -300,43 +249,18 @@ export const inviteToTrip = async (
 			throw new Error("We couldn't find your trip");
 		}
 		const sender = `${req.user?.firstName} ${req.user?.lastName}`;
-		const subject = `${sender} invited you to join his trip!`;
-		const baseContent = `
-		<h1>An invitation to join On The Road platform</h1>
-		<p>
-			Hello${invitee ? `, ${invitee.firstName}` : ''}! 
-			this is an invitation from ${sender} to join his trip.
-		</p>`;
 		if (!invitee) {
 			const userId = await users()?.insertOne({ email });
 			const key = encode(getId(userId));
-			await trips()?.updateOne(
-				{ _id: objectId(tripId) },
-				{ $addToSet: { invitees: userId } }
-			);
-			sendMail({
-				to: email,
-				subject,
-				content: `
-				${baseContent}
-				<p>
-					To proceed, you can 
-						<a href="https://road-trip-client.vercel.app/signup?key=${key}">
-							create an account
-						</a> 
-					in our platform.
-				</p>`
+			await trips()?.updateOne(Aggregation.byId(tripId), {
+				$addToSet: { invitees: userId }
 			});
+			sendMail(email, inviteNewUser(sender, key));
 		} else {
-			await trips()?.updateOne(
-				{ _id: objectId(tripId) },
-				{ $addToSet: { invitees: objectId(invitee._id) } }
-			);
-			sendMail({
-				to: email,
-				subject,
-				content: `${baseContent}<p>To proceed, you can <a href="https://road-trip-client.vercel.app/trips/invitations">view your trip invitations</a> in our platform.</p>`
+			await trips()?.updateOne(Aggregation.byId(tripId), {
+				$addToSet: { invitees: objectId(invitee._id) }
 			});
+			sendMail(email, inviteExistingUser(sender, invitee));
 		}
 		res.json({ message: 'We sent an invite to this email address' });
 		next();
@@ -366,25 +290,18 @@ export const updateTripInvitation = async (
 			throw new Error('Invalid action.');
 		}
 		const isInvited = trips()?.findOne(
-			{
-				invitees: {
-					$elemMatch: { $eq: objectId(req.user?.id) }
-				}
-			},
-			{ noCursorTimeout: false }
+			{ invitees: Aggregation.matchElementById(req?.user?.id) },
+			FIND_OPTIONS
 		);
 		if (!isInvited) {
 			res.setStatus(403);
 			throw new Error('You are not invited to this trip.');
 		}
-		await trips()?.updateOne(
-			{ _id: objectId(id) },
-			{
-				$pull: { invitees: objectId(req.user?.id) },
-				$addToSet:
-					action === 'join' ? { participants: objectId(req.user?.id) } : {}
-			}
-		);
+		await trips()?.updateOne(Aggregation.byId(id), {
+			$pull: { invitees: objectId(req.user?.id) },
+			$addToSet:
+				action === 'join' ? { participants: objectId(req.user?.id) } : {}
+		});
 		res.json({ message: 'Invitation updated' });
 	} catch (error) {
 		next(error);
@@ -398,10 +315,7 @@ export const removeTrip = async (
 ) => {
 	try {
 		const { id } = req.params;
-		const trip = await trips()?.findOne(
-			{ _id: objectId(id) },
-			{ noCursorTimeout: false }
-		);
+		const trip = await trips()?.findOne(Aggregation.byId(id), FIND_OPTIONS);
 
 		if (!trip) {
 			res.setStatus(404);
@@ -415,7 +329,7 @@ export const removeTrip = async (
 			res.setStatus(403);
 			throw new Error('a Trip can be removed only by one of its participant');
 		}
-		await trips()?.deleteOne({ _id: objectId(id) });
+		await trips()?.deleteOne(Aggregation.byId(id));
 		res.json({ message: 'Trip has been removed Successfully' });
 	} catch (error) {
 		next(error);

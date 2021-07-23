@@ -1,9 +1,10 @@
+import { byId } from 'aggregations';
 import { decode } from 'base64';
 import * as bcrypt from 'bcrypt';
 import { uploadImage } from 'cloudinary';
 import { WEEK } from 'datetime';
-import { getId, objectId } from 'db';
-import { sendMail } from 'emails';
+import { FIND_OPTIONS, getId, objectId } from 'db';
+import { sendMail, welcome } from 'emails';
 import { isEmail } from 'isEmail';
 import { create, getNumericDate } from 'jwt';
 import { TokenRequest } from 'middleware';
@@ -88,12 +89,7 @@ export const signup: RequestHandler<Omit<User, '_id'>, AuthResponse> = async (
 			firstName,
 			lastName
 		});
-		sendMail({
-			to: email,
-			subject: 'Welcome to On the Road!',
-			content:
-				"<h1>Welcome aboard!</h1><p>We're happy to have you here, <br> Visit us at: https://road-trip-client.vercel.app/</p>"
-		});
+		sendMail(email, welcome);
 		next();
 	} catch (error) {
 		if (!(error.message as string).includes('E11000')) return next(error);
@@ -115,7 +111,7 @@ export const login: RequestHandler<
 		const { email, password } = req.body;
 		const user: User | undefined = await users()?.findOne(
 			{ email },
-			{ noCursorTimeout: false }
+			FIND_OPTIONS
 		);
 		if (!user) {
 			res.setStatus(404);
@@ -161,13 +157,10 @@ export const returnToken = async (
 	next: NextFunction
 ) => {
 	try {
-		const user = await users()?.findOne(
-			{ _id: objectId(req.user?.id as string) },
-			{
-				noCursorTimeout: false,
-				projection: { _id: 0, createdAt: 0, password: 0 }
-			}
-		);
+		const user = await users()?.findOne(byId(req.user?.id), {
+			noCursorTimeout: false,
+			projection: { _id: 0, createdAt: 0, password: 0 }
+		});
 		if (!user) {
 			res.setStatus(401);
 			throw new Error("Yikes, something's not right, please try again");

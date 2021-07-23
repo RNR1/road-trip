@@ -1,8 +1,9 @@
 import { getDb } from 'db';
-import { Collection } from 'mongo/collection';
+import type { Collection } from 'mongo';
 import { User } from './User.ts';
 import { Note } from './Note.ts';
 import { TripPlan } from './TripPlan.ts';
+import { TripSchedule } from './TripSchedule.ts';
 
 export interface Trip {
 	_id: { $oid: string };
@@ -13,6 +14,7 @@ export interface Trip {
 	participants: User[];
 	notes: Note[];
 	plan: TripPlan;
+	schedule: TripSchedule;
 	invitees: User[];
 }
 

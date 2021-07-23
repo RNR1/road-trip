@@ -1,4 +1,5 @@
-import { getId, objectId } from 'db';
+import * as Aggregation from 'aggregations';
+import { FIND_OPTIONS, getId, objectId } from 'db';
 import type { TokenRequest } from 'middleware';
 import { notes, trips } from 'models';
 import { Response, NextFunction } from 'opine';
@@ -19,7 +20,7 @@ export const getNotes = async (
 						{ createdBy: objectId(req.user?.id) }
 					]
 				},
-				{ noCursorTimeout: false }
+				FIND_OPTIONS
 			)
 			.sort({ updatedAt: -1 })
 			.toArray();
@@ -49,27 +50,8 @@ export const getNote = async (
 						createdBy: objectId(req.user?.id)
 					}
 				},
-				{
-					$lookup: {
-						from: 'trips',
-						localField: 'trip',
-						foreignField: '_id',
-						as: 'trip'
-					}
-				},
-				{
-					$project: {
-						trip: {
-							description: 0,
-							participants: 0,
-							invitees: 0,
-							notes: 0
-						}
-					}
-				},
-				{
-					$unwind: { path: '$trip' }
-				}
+				...Aggregation.lookupTrip,
+				Aggregation.getNoteProjection
 			])
 			.next();
 		if (!result) {
@@ -111,10 +93,9 @@ export const addNote = async (
 			createdAt,
 			updatedAt: createdAt
 		});
-		await trips()?.updateOne(
-			{ _id: objectId(trip) },
-			{ $push: { notes: note } }
-		);
+		await trips()?.updateOne(Aggregation.byId(trip), {
+			$push: { notes: note }
+		});
 
 		res.setStatus(201).json({
 			message: 'Note has been created Successfully!',
@@ -137,10 +118,7 @@ export const updateNote = async (
 	try {
 		const { id } = req.params;
 		const { title, content } = req.body as Partial<Note>;
-		const note = await notes()?.findOne(
-			{ _id: objectId(id) },
-			{ noCursorTimeout: false }
-		);
+		const note = await notes()?.findOne(Aggregation.byId(id), FIND_OPTIONS);
 
 		if (!note) {
 			res.setStatus(404);
@@ -178,10 +156,7 @@ export const removeNote = async (
 ) => {
 	try {
 		const { id } = req.params;
-		const note = await notes()?.findOne(
-			{ _id: objectId(id) },
-			{ noCursorTimeout: false }
-		);
+		const note = await notes()?.findOne(Aggregation.byId(id), FIND_OPTIONS);
 
 		if (!note) {
 			res.setStatus(404);
@@ -194,9 +169,9 @@ export const removeNote = async (
 			throw new Error('a Note can be removed only by one of its participant');
 		}
 
-		await notes()?.deleteOne({ _id: objectId(id) });
+		await notes()?.deleteOne(Aggregation.byId(id));
 		await trips()?.updateOne(
-			{ notes: { $elemMatch: { $eq: objectId(id) } } },
+			{ notes: Aggregation.matchElementById(id) },
 			{ $pull: { notes: objectId(id) } }
 		);
 		res.json({ message: 'Note has been removed Successfully' });

@@ -1,7 +1,10 @@
 import 'loadEnv';
 import { SmtpClient, SendConfig } from 'smtp';
 
-const sendMail = async (data: Omit<SendConfig, 'from'>) => {
+export const sendMail = async (
+	to: string,
+	data: Omit<SendConfig, 'from' | 'to'>
+) => {
 	const client = new SmtpClient();
 	try {
 		await client.connectTLS({
@@ -12,6 +15,7 @@ const sendMail = async (data: Omit<SendConfig, 'from'>) => {
 		});
 		await client.send({
 			from: 'Ron from On the road',
+			to,
 			...data
 		});
 	} catch (error) {
@@ -20,5 +24,3 @@ const sendMail = async (data: Omit<SendConfig, 'from'>) => {
 		await client.close();
 	}
 };
-
-export { sendMail };

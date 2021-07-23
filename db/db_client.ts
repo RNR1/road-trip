@@ -1,6 +1,6 @@
 import 'loadEnv';
 import { MongoClient, Bson } from 'mongo';
-import type { Database } from 'mongo/database';
+import type { Database } from 'mongo';
 import * as log from 'logger';
 
 let db: Database;

@@ -1,5 +1,5 @@
 import { getDb } from 'db';
-import { Collection } from 'mongo/collection';
+import type { Collection } from 'mongo';
 import { Trip } from './Trip.ts';
 import { Waypoint } from './Waypoint.ts';
 

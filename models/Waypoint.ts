@@ -1,5 +1,5 @@
 import { getDb } from 'db';
-import { Collection } from 'mongo/collection';
+import type { Collection } from 'mongo';
 import { TripPlan } from './TripPlan.ts';
 
 export interface Waypoint {
