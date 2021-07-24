@@ -21,5 +21,6 @@ scheduledEventsRouter.put(
 	verifyToken,
 	ScheduledEvents.updateEvent
 );
+scheduledEventsRouter.delete('/:id', verifyToken, ScheduledEvents.deleteEvent);
 
 export default scheduledEventsRouter;

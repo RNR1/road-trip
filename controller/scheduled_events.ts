@@ -142,3 +142,34 @@ export const updateEvent = async (
 		next(error);
 	}
 };
+
+export const deleteEvent = async (
+	req: TokenRequest,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		const { id } = req.params;
+		const prev = await scheduledEvents()
+			?.aggregate([
+				Aggregate.matchById(id),
+				...Aggregate.lookupTripSchedule,
+				Aggregate.matchByParticipant(req.user?.id),
+				Aggregate.getScheduledEventProjection
+			])
+			.next();
+		if (!prev) {
+			res.setStatus(404);
+			throw new Error("We couldn't find your event.");
+		}
+		const pullEventFromTripSchedule = { $pull: { events: objectId(id) } };
+		await tripSchedules()?.updateOne(
+			Aggregate.byId(prev?.schedule._id),
+			pullEventFromTripSchedule
+		);
+		await scheduledEvents()?.deleteOne(Aggregate.byId(id));
+		res.json({ message: 'Your event has been deleted successfully!' });
+	} catch (error) {
+		next(error);
+	}
+};
