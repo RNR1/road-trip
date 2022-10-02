@@ -1,20 +1,25 @@
 import 'loadEnv';
-import { SmtpClient, SendConfig } from 'smtp';
+import { SMTPClient, SendConfig } from 'mailer';
 
 export const sendMail = async (
 	to: string,
 	data: Omit<SendConfig, 'from' | 'to'>
 ) => {
-	const client = new SmtpClient();
-	try {
-		await client.connectTLS({
-			hostname: 'smtp.gmail.com',
+	let client = new SMTPClient({
+		connection: {
+			hostname: 'smtp.sendgrid.net',
 			port: 465,
-			username: Deno.env.get('GMAIL_USERNAME'),
-			password: Deno.env.get('GMAIL_PASSWORD')
-		});
+			tls: true,
+			auth: {
+				username: Deno.env.get('SENDGRID_USERNAME'),
+				password: Deno.env.get('SENDGRID_PASSWORD')
+			}
+		}
+	});
+
+	try {
 		await client.send({
-			from: 'Ron from On the road',
+			from: `Ron from On the road <${Deno.env.get('GMAIL_USERNAME')}>`,
 			to,
 			...data
 		});

@@ -255,12 +255,12 @@ export const inviteToTrip = async (
 			await trips()?.updateOne(Aggregation.byId(tripId), {
 				$addToSet: { invitees: userId }
 			});
-			sendMail(email, inviteNewUser(sender, key));
+			await sendMail(email, inviteNewUser(sender, key));
 		} else {
 			await trips()?.updateOne(Aggregation.byId(tripId), {
 				$addToSet: { invitees: objectId(invitee._id) }
 			});
-			sendMail(email, inviteExistingUser(sender, invitee));
+			await sendMail(email, inviteExistingUser(sender, invitee));
 		}
 		res.json({ message: 'We sent an invite to this email address' });
 		next();

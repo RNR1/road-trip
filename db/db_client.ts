@@ -1,5 +1,5 @@
 import 'loadEnv';
-import { MongoClient, Bson } from 'mongo';
+import { MongoClient, ObjectId } from 'mongo';
 import type { Database } from 'mongo';
 import * as log from 'logger';
 
@@ -23,9 +23,9 @@ export function getDb(): Database {
 }
 
 export function getId(_id: { $oid: string } | unknown): string {
-	return new Bson.ObjectID(_id).toHexString();
+	return new ObjectId(_id).toHexString();
 }
 
-export function objectId(id: string | unknown): Bson.ObjectID {
-	return new Bson.ObjectID(id);
+export function objectId(id: string | unknown): ObjectId {
+	return new ObjectId(id);
 }
